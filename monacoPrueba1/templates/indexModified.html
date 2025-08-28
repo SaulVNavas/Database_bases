@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>Editor Monaco con Flask y SQLite</title>
+    <style>
+        #editor { width: 800px; height: 400px; border: 1px solid gray; }
+        button { margin-top: 10px; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.34.0/min/vs/loader.js"></script>
+</head>
+<body>
+
+<div id="editor"></div>
+<button id="guardarBtn">Guardar contenido</button>
+<button id="cargarBtn">Cargar contenido</button>
+
+<script>
+    require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.34.0/min/vs' }});
+
+    require(['vs/editor/editor.main'], function() {
+        window.editor = monaco.editor.create(document.getElementById('editor'), {
+            value: '// Escribe tu código aquí...',
+            language: 'javascript',
+            theme: 'vs-dark'
+        });
+
+        document.getElementById('guardarBtn').addEventListener('click', () => {
+            const contenido = window.editor.getValue();
+            fetch('/guardar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contenido })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'ok') alert('Contenido guardado correctamente');
+            });
+        });
+
+        document.getElementById('cargarBtn').addEventListener('click', () => {
+            fetch('/cargar')
+                .then(response => response.json())
+                .then(data => {
+                    window.editor.setValue(data.contenido || '');
+                });
+        });
+    });
+</script>
+
+</body>
+</html>

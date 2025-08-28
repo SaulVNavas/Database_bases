@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Monaco Editor dinámico</title>
+    <style>
+        #editor {
+            width: 100%;
+            height: 90vh;
+            border: 1px solid #ccc;
+        }
+        .highlight-hola {
+            background-color: yellow;
+            color: black;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h2>Editor Monaco: resaltado dinámico de "Hola"</h2>
+    <div id="editor"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@latest/min/vs/loader.js"></script>
+    <script>
+        require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@latest/min/vs' } });
+
+        require(['vs/editor/editor.main'], function () {
+            const editor = monaco.editor.create(document.getElementById('editor'), {
+                value: '',
+                language: 'plaintext',
+                theme: 'vs-dark'
+            });
+
+            let decorations = [];
+
+            function updateHighlights() {
+                const model = editor.getModel();
+
+                // Solo resalta "Hola" si está aislado (no pegado a letras o números)
+                const regex = /\bHola mundo\b/g;
+                const matches = model.findMatches(regex.source, true, true, true, null, true);
+
+                if (matches.length === 0) {
+                    decorations = editor.deltaDecorations(decorations, []);
+                    return;
+                }
+
+                decorations = editor.deltaDecorations(decorations, matches.map(match => ({
+                    range: match.range,
+                    options: {
+                        inlineClassName: 'highlight-hola'
+                    }
+                })));
+            }
+
+            editor.onDidChangeModelContent(updateHighlights);
+        });
+    </script>
+</body>
+</html>

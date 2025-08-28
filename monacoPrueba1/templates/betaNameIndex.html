@@ -73,6 +73,24 @@
             const visibilityRegex = singleRegexSet(['library', 'use', 'all', 'is', 'in', 'out', 'inout', 'buffer', 'linkage']);
             const othersRegex = singleRegexSet(['wait', 'assert', 'report', 'severity', 'after', 'transport', 'reject', 'guarded', 'open', 'null']);
 
+            function dynamicTokenProvider (dynamicRegex) {
+                return {
+                    tokenizer: {
+                        root: [
+                            [typeRegex, 'type-theme'],
+                            [structRegex, 'struct-theme'],
+                            [controlRegex, 'control-theme'],
+                            [operationsRegex, 'operations-theme'],
+                            [visibilityRegex, 'visibility-theme'],
+                            [othersRegex, 'others-theme'],
+                            [dynamicRegex, 'others-theme'],
+                            [/(^|\s)(--[^\r\n]+)/, 'comments-theme']
+                        ]
+                    }
+                }
+            }
+
+            
             monaco.languages.setMonarchTokensProvider('customVHDL', {
                 tokenizer: {
                     root: [
