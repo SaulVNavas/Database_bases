@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <title>Resaltado en tiempo real</title>
   <style>
+    .monaco-editor .name-style {
+      color: #1768ff; /* rojo */
+      font-weight: bold;
+    }
     .monaco-editor .type-style {
       color: #F1FC17 !important; /* rojo */
       font-weight: bold;
@@ -24,11 +28,12 @@
       color: #FFA500 !important; /* rojo */
       font-weight: bold;
     }
-    .monaco-editor .name-style {
-      color: #1768ff !important; /* rojo */
-    }
     .monaco-editor .others-style {
       color: #FF1793 !important; /* rojo */
+      font-weight: bold;
+    }
+    .monaco-editor .comment-style {
+      color:  #00ac42; /* verde */
       font-weight: bold;
     }
     #editor {
@@ -53,6 +58,7 @@
       });
 
       let decorations = [];
+      const editorModel = editor.getModel();
 
       function singleRegexSet (regexSet){
         return new RegExp(`\\b(${regexSet.join('|')})\\b`, 'g');
@@ -89,8 +95,48 @@
 
       function highlightWord(){
         let allDecorations = [];
+        let nameWords = new Set();
+
+        const regex = /(bit|boolean|character|integer|real|string|time|variable)/i;
+        const nameRegexMatches = editorModel.findMatches(regex.source, null, true, true, null, true);
+
+        nameRegexMatches.forEach(nameMatch => {
+          const triggerRange = nameMatch.range;
+          const nameSearchRange = new monaco.Range(
+            triggerRange.endLineNumber,
+            triggerRange.endColumn,
+            editorModel.getLineCount(),
+            editorModel.getLineMaxColumn(editorModel.getLineCount())
+          );
+          const newNameMatches = editorModel.findMatches(
+            "\\w+",   // texto o regex
+            nameSearchRange,    // desde dónde empezar la búsqueda
+            true,       // isRegex
+            true,       // matchCase
+            null,        // wordSeparators
+            true,         // captureMatches
+          );
+          if (newNameMatches.length > 0) {
+            nameWords.add('\\b' + newNameMatches[0].matches + '\\b');
+          }
+        });
+        console.log(nameWords.size)
+        if (nameWords.size == 0){
+          decorations = editor.deltaDecorations(decorations, []);
+        }
+        else {
+          nameWords.forEach(nameWord => {
+            const nameMatches = editorModel.findMatches(nameWord, true, true, true, null, true);
+            const newDecorations = nameMatches.map(match => ({
+              range: match.range,
+              options: { inlineClassName: "name-style" }
+            }));
+            allDecorations = allDecorations.concat(newDecorations);
+          });
+        }
+
         regexSet.forEach(regex => {
-          const matches = editor.getModel().findMatches(regex.regexString.source, true, true, true, null, true);
+          const matches = editorModel.findMatches(regex.regexString.source, true, true, true, null, true);
           const newDecorations = matches.map(match => ({
             range: match.range,
             options: { inlineClassName: regex.regexStyle }
@@ -98,28 +144,7 @@
           allDecorations = allDecorations.concat(newDecorations);
         });
 
-        let nameWords = new Set();
-
-        const regex = /(bit|boolean|character|integer|real|string|time|variable)\s+(\w+)/gi;
-        const nameRegexMatches = editor.getModel().findMatches(regex.source, null, true, true, null, true);
-
-        for (const nameRegexMatch of nameRegexMatches) {
-          if (nameRegexMatch.matches && nameRegexMatch.matches[2]) {
-            nameWords.add('\\b' + nameRegexMatch.matches[2] + '\\b');
-          }
-        }
-
-        nameWords.forEach(nameWord => {
-          const nameMatches = editor.getModel().findMatches(nameWord, null, true, true, null, true);
-          nameMatches.forEach(nameMatch => {
-            allDecorations.push({
-              range: nameMatch.range,
-              options: { inlineClassName: "name-style" }
-            });
-          });
-        });
-
-        decorations = editor.deltaDecorations(decorations, allDecorations);
+        allDecorations = editor.deltaDecorations(decorations, allDecorations);
       }
 
       editor.onDidChangeModelContent(() => {

@@ -2,13 +2,40 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Resaltado dinámico</title>
+  <title>Resaltado en tiempo real</title>
   <style>
     .monaco-editor .name-style {
-      color: #ff4d4f !important;
+      color: #1768ff; /* rojo */
       font-weight: bold;
     }
-
+    .monaco-editor .type-style {
+      color: #F1FC17 !important; /* rojo */
+      font-weight: bold;
+    }
+    .monaco-editor .struct-style {
+      color: #87FF17 !important; /* rojo */
+      font-weight: bold;
+    }
+    .monaco-editor .control-style {
+      color: #1797FF !important; /* rojo */
+      font-weight: bold;
+    }
+    .monaco-editor .operations-style {
+      color: #b4a9e7 !important; /* rojo */
+      font-weight: bold;
+    }
+    .monaco-editor .visibility-style {
+      color: #FFA500 !important; /* rojo */
+      font-weight: bold;
+    }
+    .monaco-editor .others-style {
+      color: #FF1793 !important; /* rojo */
+      font-weight: bold;
+    }
+    .monaco-editor .comment-style {
+      color:  #00ac42; /* verde */
+      font-weight: bold;
+    }
     #editor {
       width: 800px;
       height: 400px;
@@ -18,7 +45,6 @@
 </head>
 <body>
   <div id="editor"></div>
-  <div id="counter"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
   <script>
@@ -26,51 +52,199 @@
 
     require(["vs/editor/editor.main"], function () {
       const editor = monaco.editor.create(document.getElementById("editor"), {
-        value: "Escribe: bit mundo\nreal prueba\nDespués se repite: mundo prueba",
-        language: "plaintext",
+        value: "Escribe Hola varias veces...\n",
+        language: "customVHDL",
         theme: "vs-dark"
       });
 
-      let decorations = [];
+      let allDecorations = [];
+      const editorModel = editor.getModel();
+      let currentPositionStyle;
 
-      function highlightDynamic() {
-        let allDecorations = [];
-        let nameWords = new Set();
-
-        // 1️⃣ Buscar todas las frases "hola buenas <palabra>"
-        const regex = /(bit|boolean|character|integer|real|string|time|variable)\s+(\w+)/gi;
-        const nameRegexMatches = editor.getModel().findMatches(regex.source, null, true, true, null, true);
-
-        // Extraer todas las palabras encontradas (grupo 2)
-        for (const nameRegexMatch of nameRegexMatches) {
-          if (nameRegexMatch.matches && nameRegexMatch.matches[2]) {
-            nameWords.add('\\b' + nameRegexMatch.matches[2] + '\\b');
-          }
-        }
-
-        // 2️⃣ Resaltar TODAS las ocurrencias de cada palabra encontrada
-        nameWords.forEach(nameWord => {
-          const nameMatches = editor.getModel().findMatches(nameWord, null, true, true, null, true);
-          nameMatches.forEach(nameMatch => {
-            allDecorations.push({
-              range: nameMatch.range,
-              options: { inlineClassName: "name-style" }
-            });
-          });
-        });
-
-        // Aplicar todas las decoraciones
-        decorations = editor.deltaDecorations(decorations, allDecorations);
-
-        // Actualizar contador en pantalla
-        document.getElementById("counter").innerText = 
-          "Palabras detectadas: " + [...nameWords].join(", ") + 
-          " | Total coincidencias: " + allDecorations.length;
+      function wordSetToRegex (regexSet){
+        return new RegExp(`\\b(${regexSet.join('|')})\\b`, "g");
       }
 
-      // Resaltar al inicio y en tiempo real
-      highlightDynamic();
-      editor.onDidChangeModelContent(() => highlightDynamic());
+      // Expresiones regulares generadas por términos clave
+      const highlightTriggers = {
+        type: {
+          regex: wordSetToRegex(['bit', 'boolean', 'character', 'integer', 'real', 'string', 'time', 'variable']),
+          regexStyle: 'type-style'
+        },
+        struct: {
+          regex: wordSetToRegex(['architecture', 'begin', 'block', 'component', 'configuration',
+            'end', 'entity', 'generate', 'package', 'process']),
+          regexStyle: 'struct-style'
+        },
+        control: {
+          regex: wordSetToRegex(['if', 'then', 'else', 'elsif', 'case', 'when', 'loop', 'while', 'for', 'next', 'exit']),
+          regexStyle: 'control-style'
+        },
+        operations: {
+          regex: wordSetToRegex(['signal', 'variable', 'constant', ':=', '=>', 'and', 'or', 'not', 'xor', 'nand', 'nor', 'xnor']),
+          regexStyle: 'operations-style'
+        },
+        visibility: {
+          regex: wordSetToRegex(['library', 'use', 'all', 'is', 'in', 'out', 'inout', 'buffer', 'linkage']),
+          regexStyle: 'visibility-style'
+        },
+        others: {
+          regex: wordSetToRegex(['wait', 'assert', 'report', 'severity', 'after', 'transport', 'reject', 'guarded', 'open', 'null']),
+          regexStyle: 'others-style'
+        }
+      };
+      
+
+      let nameRegexes = /(bit|boolean|character|integer|real|string|time|variable)\+s(\w+)/gi;
+
+      editor.onDidChangeModelContent((event) => {
+        event.changes.forEach(change => {
+          console.log(change.range.startLineNumber)
+          if(change.rangeLength < 2){
+            const changeChar = change.text;
+            const changeRange = change.range;
+            const changeStartPosition = new monaco.Position(changeRange.startLineNumber, changeRange.startColumn);
+            const changeEndPosition = new monaco.Position(changeRange.endLineNumber, changeRange.endColumn);
+            const changeStartPositionWord = editorModel.getWordAtPosition(changeStartPosition);
+            const changeEndPositionWord = editorModel.getWordAtPosition(changeEndPosition);
+            const changedWords = [
+              {
+                obtainedWord: changeStartPositionWord, 
+                position: changeStartPosition
+              },
+              {
+                obtainedWord: changeEndPositionWord,
+                position: changeEndPosition
+              }
+            ];
+             
+            for(const changedWord of changedWords){
+              if(changedWord.obtainedWord !== null){
+                for(const triggerName in highlightTriggers) {
+                  if (highlightTriggers[triggerName].regex.test(changedWord.obtainedWord.word)){
+                    currentPositionStyle = highlightTriggers[triggerName].regexStyle;
+                    const currentWordMatches = editorModel.findMatches(
+                      changedWord.obtainedWord.word,   // texto
+                      true,
+                      true,       // isRegex
+                      true,       // matchCase
+                      null,        // wordSeparators
+                      true,         // captureMatches
+                    );
+                    const currentWordDecorations = currentWordMatches.map(currentWordMatch => ({
+                      range: currentWordMatch.range,
+                      options: { inlineClassName: highlightTriggers[triggerName].regexStyle }
+                    }));
+                    allDecorations = allDecorations.concat(currentWordDecorations);
+                    decorations = editor.deltaDecorations(allDecorations, allDecorations);
+                    return;
+                  }
+                }
+                const nonKeywordRange = new monaco.Range(
+                  changedWord.position.lineNumber,
+                  changedWord.position.column,
+                  changedWord.position.lineNumber,
+                  changedWord.position.column
+                );
+                const decorationsToUpdate = editorModel.getDecorationsInRange(nonKeywordRange);
+                console.log(changedWord.obtainedWord);
+                const idsToRemove = decorationsToUpdate.map(d => d.id);
+                if (idsToRemove.length > 0) {
+                  editor.deltaDecorations(idsToRemove, []);
+                }
+
+              }
+            }
+          }
+          else {
+            //rebootHighlights();
+            console.log("yes", change.rangeLength);
+            return;
+          }
+        });
+      });
+
+      function actualizarDecoradores() {
+        const model = editor.getModel();
+        const regex = /\b(if|else|for|while)\b/g; // ejemplo de keywords
+        const text = model.getValue();
+        
+        let matches = [];
+        let match;
+        
+        while ((match = regex.exec(text)) !== null) {
+          let start = model.getPositionAt(match.index);
+          let end = model.getPositionAt(match.index + match[0].length);
+
+          matches.push({
+            range: new monaco.Range(
+              start.lineNumber, start.column,
+              end.lineNumber, end.column
+            ),
+            options: {
+              inlineClassName: "keyword-style"
+            }
+          });
+        }
+
+        // 🔹 Reemplaza decoraciones anteriores con las nuevas
+        keywordDecorations = editor.deltaDecorations(keywordDecorations, matches);
+      }
+      
+
+      function rebootHighlights(){
+        let newDecorations = [];
+        let nameWords = new Set();
+
+        const regex = /(bit|boolean|character|integer|real|string|time|variable)/i;
+        const nameRegexMatches = editorModel.findMatches(regex.source, null, true, true, null, true);
+
+        nameRegexMatches.forEach(nameMatch => {
+          const triggerRange = nameMatch.range;
+          const nameSearchRange = new monaco.Range(
+            triggerRange.endLineNumber,
+            triggerRange.endColumn,
+            editorModel.getLineCount(),
+            editorModel.getLineMaxColumn(editorModel.getLineCount())
+          );
+          const newNameMatches = editorModel.findMatches(
+            "\\w+",   // texto o regex
+            nameSearchRange,    // desde dónde empezar la búsqueda
+            true,       // isRegex
+            true,       // matchCase
+            null,        // wordSeparators
+            true,         // captureMatches
+          );
+          if (newNameMatches.length > 0) {
+            nameWords.add('\\b' + newNameMatches[0].matches + '\\b');
+          }
+        });
+        console.log(nameWords.size)
+        if (nameWords.size === 0){
+          allDecorations = editor.deltaDecorations(allDecorations, []);
+        }
+        else {
+          nameWords.forEach(nameWord => {
+            const nameMatches = editorModel.findMatches(nameWord, true, true, true, null, true);
+            const newNameDecorations = nameMatches.map(match => ({
+              range: match.range,
+              options: { inlineClassName: "name-style" }
+            }));
+            newDecorations = newDecorations.concat(newNameDecorations);
+          });
+        }
+
+        highlightTriggers.forEach(highlightTrigger => {
+          const matches = editorModel.findMatches(highlightTrigger.regex.source, true, true, true, null, true);
+          const newNameDecorations = matches.map(match => ({
+            range: match.range,
+            options: { inlineClassName: regex.regexStyle }
+          }));
+          newDecorations = newDecorations.concat(newNameDecorations);
+        });
+
+        decorations = editor.deltaDecorations(allDecorations, newDecorations);
+      }
     });
   </script>
 </body>
