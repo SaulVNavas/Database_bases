@@ -22,7 +22,8 @@ def init_db():
 def index():
     # indexColorSearch
     # indexExperimentalHighlights
-    return render_template('indexExperimentalHighlights.html')
+    # indexEveryWordInRange
+    return render_template('indexEveryWordInRange.html')
 
 
 # Ruta para guardar localmente (recibe JSON)

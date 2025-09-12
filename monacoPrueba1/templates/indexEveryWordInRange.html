@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Resaltado en tiempo real</title>
+  <style>
+    .monaco-editor .name-style {
+      color: #1768ff; /* rojo */
+      font-weight: bold;
+    }
+    .monaco-editor .type-style {
+      color: #F1FC17 !important; /* rojo */
+      font-weight: bold;
+    }
+    .monaco-editor .struct-style {
+      color: #87FF17 !important; /* rojo */
+      font-weight: bold;
+    }
+    .monaco-editor .control-style {
+      color: #1797FF !important; /* rojo */
+      font-weight: bold;
+    }
+    .monaco-editor .operations-style {
+      color: #b4a9e7 !important; /* rojo */
+      font-weight: bold;
+    }
+    .monaco-editor .visibility-style {
+      color: #FFA500 !important; /* rojo */
+      font-weight: bold;
+    }
+    .monaco-editor .others-style {
+      color: #FF1793 !important; /* rojo */
+      font-weight: bold;
+    }
+    .monaco-editor .comment-style {
+      color:  #00ac42; /* verde */
+      font-weight: bold;
+    }
+    #editor {
+      width: 800px;
+      height: 400px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div id="editor"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
+  <script>
+    require.config({ paths: { vs: "https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs" } });
+
+    require(["vs/editor/editor.main"], function () {
+      const editor = monaco.editor.create(document.getElementById("editor"), {
+        value: "Escribe Hola varias veces...\n",
+        language: "customVHDL",
+        theme: "vs-dark"
+      });
+
+      let allDecorations = [];
+      const editorModel = editor.getModel();
+      let currentPositionStyle;
+
+      function wordSetToRegex (regexSet){
+        return new RegExp(`\\b(${regexSet.join('|')})\\b`, "g");
+      }
+
+      // Expresiones regulares generadas por términos clave
+        const highlightTriggers = {
+            type: {
+                regex: wordSetToRegex(['bit', 'boolean', 'character', 'integer', 'real', 'string', 'time', 'variable']),
+                regexStyle: 'type-style'
+            },
+            struct: {
+                regex: wordSetToRegex(['architecture', 'begin', 'block', 'component', 'configuration',
+                    'end', 'entity', 'generate', 'package', 'process']),
+                regexStyle: 'struct-style'
+            },
+            control: {
+                regex: wordSetToRegex(['if', 'then', 'else', 'elsif', 'case', 'when', 'loop', 'while', 'for', 'next', 'exit']),
+                regexStyle: 'control-style'
+            },
+            operations: {
+                regex: wordSetToRegex(['signal', 'variable', 'constant', ':=', '=>', 'and', 'or', 'not', 'xor', 'nand', 'nor', 'xnor']),
+                regexStyle: 'operations-style'
+            },
+            visibility: {
+                regex: wordSetToRegex(['library', 'use', 'all', 'is', 'in', 'out', 'inout', 'buffer', 'linkage']),
+                regexStyle: 'visibility-style'
+            },
+            others: {
+                regex: wordSetToRegex(['wait', 'assert', 'report', 'severity', 'after', 'transport', 'reject', 'guarded', 'open', 'null']),
+                regexStyle: 'others-style'
+            }
+      };
+
+      let nameRegexes = /(bit|boolean|character|integer|real|string|time|variable)\+s(\w+)/gi;
+
+        editor.onDidChangeModelContent((event) => {
+
+        event.changes.forEach(change => {
+          const changeRange = change.range;
+          const changeStartLine = changeRange.startLineNumber;
+          const changeEndLine = changeRange.endLineNumber;
+          // 1. Texto nuevo en el cambio
+          const newText = change.text;
+          const changeStart = new monaco.Position(changeStartLine, changeRange.startColumn);
+          const changeEnd = new monaco.Position(changeEndLine, changeRange.endColumn);
+          const startPosWord = editorModel.getWordAtPosition(changeStart);
+          const endPosWord = editorModel.getWordAtPosition(changeEnd);
+          const changeStartColumn = (startPosWord === null)? changeRange.startColumn : startPosWord.startColumn;
+          const changeEndColumn = (endPosWord === null)? changeRange.endColumn : endPosWord.endColumn;
+
+          const fullRange = new monaco.Range(
+            changeStartLine,
+            changeStartColumn,
+            changeEndLine,
+            changeEndColumn
+          );
+
+          const textInRange = editorModel.getValueInRange(fullRange);
+          const words = textInRange.match(/\b\w+\b/g) || [];
+
+          console.log(words); // ['const', 'PI', 'function', 'calculateArea', ...]
+          words.forEach(wordInRange => {
+            for(const triggerName in highlightTriggers) {
+            if (highlightTriggers[triggerName].regex.test(wordInRange.word)){
+              editor.deltaDecorations([], [
+                {
+                  range: wordRange,
+                  options: {
+                    inlineClassName: highlightTriggers[triggerName].regexStyle
+                  }
+                }
+              ]);
+              console.log(wordRange)
+              return;
+            }
+          }
+          })
+          
+          /*
+          for(let line = changeStartLine; line <= changeEndLine; line++){
+            const lineContent = editorModel.getLineContent(line);
+            
+            const lineStartCol = (line === changeStartLine) ? changeStartColumn : 1;
+            const lineEndCol   = (line === changeEndLine) ? changeEndColumn : lineContent.length + 1;
+
+            
+            // Buscar palabras con regex
+            const regex = /\w+/g;
+            console.log(lineContent, regex.exec(lineContent)); 
+            let match;
+            while ((match = regex.exec(lineContent)) !== null) {
+              const word = match[0];
+
+              // Ajustar columnas al índice original de la línea
+              const wordStartColumn = lineStartCol + match.index;
+              const wordEndColumn = wordStartColumn + word.length;
+
+              const wordPosition = new monaco.Position(line, lineStartCol);
+              const wordInRange = editorModel.getWordAtPosition(changeEnd);
+              if (wordInRange !== null){
+                const wordContent = wordInRange.word;
+                const wordRange = new monaco.Range(lineStartCol + match.index, line, wordStartColumn + word.length, line);
+                for(const triggerName in highlightTriggers) {
+                  
+                  if (highlightTriggers[triggerName].regex.test(wordContent)){
+                    editor.deltaDecorations([], [
+                      {
+                        range: wordRange,
+                        options: {
+                          inlineClassName: highlightTriggers[triggerName].regexStyle
+                        }
+                      }
+                    ]);
+                    console.log(wordRange)
+                    return;
+                  }
+                }
+                // editor.deltaDecorations(model.getDecorationsInRange(wordRange), []);
+              }
+            }
+          }*/
+        });
+      });
+
+    });
+  </script>
+</body>
+</html>
