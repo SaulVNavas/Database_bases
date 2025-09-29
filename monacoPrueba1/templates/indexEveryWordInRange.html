@@ -65,6 +65,40 @@
         return new RegExp(`\\b(${regexSet.join('|')})\\b`, "g");
       }
 
+      function wordsInRange(range){
+        const words = [];
+
+        for (let line = range.startLineNumber; line <= range.endLineNumber; line++) {
+          if(line > editorModel.getLineCount()){
+            break;
+          }
+
+          const lineContent = editorModel.getLineContent(line);
+
+          // Limitar columnas al rango dado
+          const startCol = (line === range.startLineNumber) ? range.startColumn : 1;
+          const endCol   = (line === range.endLineNumber) ? range.endColumn : lineContent.length + 1;
+
+          const subLine = lineContent.substring(startCol - 1, endCol - 1);
+
+          let match;
+          const regex = /\w+/g;
+          while ((match = regex.exec(subLine)) !== null) {
+            const word = match[0];
+            const startColumn = startCol + match.index;
+            const endColumn = startColumn + word.length;
+
+            words.push({
+              word,
+              range: new monaco.Range(line, startColumn, line, endColumn)
+            });
+          }
+        }
+
+        return words;
+      }
+
+
       // Expresiones regulares generadas por términos clave
         const highlightTriggers = {
             type: {
@@ -92,99 +126,37 @@
                 regex: wordSetToRegex(['wait', 'assert', 'report', 'severity', 'after', 'transport', 'reject', 'guarded', 'open', 'null']),
                 regexStyle: 'others-style'
             }
-      };
+        };
 
-      let nameRegexes = /(bit|boolean|character|integer|real|string|time|variable)\+s(\w+)/gi;
+        editor.onDidChangeModelContent((e) => {
+          const model = editor.getModel();
+          const affectedWords = new Set();
 
-        editor.onDidChangeModelContent((event) => {
-
-        event.changes.forEach(change => {
-          const changeRange = change.range;
-          const changeStartLine = changeRange.startLineNumber;
-          const changeEndLine = changeRange.endLineNumber;
-          // 1. Texto nuevo en el cambio
-          const newText = change.text;
-          const changeStart = new monaco.Position(changeStartLine, changeRange.startColumn);
-          const changeEnd = new monaco.Position(changeEndLine, changeRange.endColumn);
-          const startPosWord = editorModel.getWordAtPosition(changeStart);
-          const endPosWord = editorModel.getWordAtPosition(changeEnd);
-          const changeStartColumn = (startPosWord === null)? changeRange.startColumn : startPosWord.startColumn;
-          const changeEndColumn = (endPosWord === null)? changeRange.endColumn : endPosWord.endColumn;
-
-          const fullRange = new monaco.Range(
-            changeStartLine,
-            changeStartColumn,
-            changeEndLine,
-            changeEndColumn
-          );
-
-          const textInRange = editorModel.getValueInRange(fullRange);
-          const words = textInRange.match(/\b\w+\b/g) || [];
-
-          console.log(words); // ['const', 'PI', 'function', 'calculateArea', ...]
-          words.forEach(wordInRange => {
-            for(const triggerName in highlightTriggers) {
-            if (highlightTriggers[triggerName].regex.test(wordInRange.word)){
-              editor.deltaDecorations([], [
-                {
-                  range: wordRange,
-                  options: {
-                    inlineClassName: highlightTriggers[triggerName].regexStyle
-                  }
-                }
-              ]);
-              console.log(wordRange)
-              return;
-            }
-          }
-          })
-          
-          /*
-          for(let line = changeStartLine; line <= changeEndLine; line++){
-            const lineContent = editorModel.getLineContent(line);
+          e.changes.forEach(change => {
+            // 1. Rango completo de líneas afectadas
+            const startLine = change.range.startLineNumber;
+            const endLine = change.range.endLineNumber;
             
-            const lineStartCol = (line === changeStartLine) ? changeStartColumn : 1;
-            const lineEndCol   = (line === changeEndLine) ? changeEndColumn : lineContent.length + 1;
-
-            
-            // Buscar palabras con regex
-            const regex = /\w+/g;
-            console.log(lineContent, regex.exec(lineContent)); 
-            let match;
-            while ((match = regex.exec(lineContent)) !== null) {
-              const word = match[0];
-
-              // Ajustar columnas al índice original de la línea
-              const wordStartColumn = lineStartCol + match.index;
-              const wordEndColumn = wordStartColumn + word.length;
-
-              const wordPosition = new monaco.Position(line, lineStartCol);
-              const wordInRange = editorModel.getWordAtPosition(changeEnd);
-              if (wordInRange !== null){
-                const wordContent = wordInRange.word;
-                const wordRange = new monaco.Range(lineStartCol + match.index, line, wordStartColumn + word.length, line);
-                for(const triggerName in highlightTriggers) {
-                  
-                  if (highlightTriggers[triggerName].regex.test(wordContent)){
-                    editor.deltaDecorations([], [
-                      {
-                        range: wordRange,
-                        options: {
-                          inlineClassName: highlightTriggers[triggerName].regexStyle
-                        }
-                      }
-                    ]);
-                    console.log(wordRange)
-                    return;
-                  }
-                }
-                // editor.deltaDecorations(model.getDecorationsInRange(wordRange), []);
+            for (let line = startLine-1; line <= endLine+1; line++) {
+              if(line < 1){
+                continue;
               }
-            }
-          }*/
-        });
-      });
+              if(line > editorModel.getLineCount()){
+                break;
+              }
 
+              const lineText = model.getLineContent(line);
+              const words = lineText.match(/\w+/g) || [];
+              words.forEach(w => affectedWords.add(w));
+            }
+
+          // 2. Texto insertado (multi-línea)
+          const insertedWords = change.text.match(/\w+/g) || [];
+          insertedWords.forEach(w => affectedWords.add(w));
+        });
+
+        console.log("Todas las palabras afectadas:", Array.from(affectedWords));
+      });
     });
   </script>
 </body>

@@ -28,7 +28,7 @@
             font-weight: bold;
         }
         .visibility-style {
-            background-color: rgb(255, 0, 200);
+            background-color: rgb(42, 199, 55);
             color: black;
             font-weight: bold;
         }
@@ -39,7 +39,6 @@
         }
 
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.34.0/min/vs/loader.js"></script>
 </head>
 <body>
 
@@ -49,129 +48,6 @@
     <button id="cargarBtn">Cargar contenido</button>
 
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@latest/min/vs/loader.js"></script>
-    <script>
-        require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@latest/min/vs' } });
-
-        require(['vs/editor/editor.main'], function () {
-
-            function singleRegexSet (regexSet){
-                return new RegExp(`([^A-Za-z0-9]|^)(${regexSet.join('|')})([^A-Za-z0-9]|$)`, 'g');
-            }
-
-            monaco.languages.register({ id: 'customVHDL' });
-            window.editor = monaco.editor.create(document.getElementById('editor'), {
-                value: '',
-                language: 'customVHDL',
-            });
-            
-            // Expresiones regulares generadas por términos clave
-            const typeRegex = singleRegexSet(['bit', 'boolean', 'character', 'integer', 'real', 'string', 'time', 'variable']);
-            const structRegex = singleRegexSet(['architecture', 'begin', 'block', 'component', 'configuration',
-                        'end', 'entity', 'generate', 'package', 'process']);
-            const controlRegex = singleRegexSet(['if', 'then', 'else', 'elsif', 'case', 'when', 'loop', 'while', 'for', 'next', 'exit']);
-            const operationsRegex = singleRegexSet(['signal', 'variable', 'constant', ':=', '=>', 'and', 'or', 'not', 'xor', 'nand', 'nor', 'xnor']);
-            const visibilityRegex = singleRegexSet(['library', 'use', 'all', 'is', 'in', 'out', 'inout', 'buffer', 'linkage']);
-            const othersRegex = singleRegexSet(['wait', 'assert', 'report', 'severity', 'after', 'transport', 'reject', 'guarded', 'open', 'null']);
-
-            function dynamicTokenProvider (dynamicRegex) {
-                return {
-                    tokenizer: {
-                        root: [
-                            [typeRegex, 'type-theme'],
-                            [structRegex, 'struct-theme'],
-                            [controlRegex, 'control-theme'],
-                            [operationsRegex, 'operations-theme'],
-                            [visibilityRegex, 'visibility-theme'],
-                            [othersRegex, 'others-theme'],
-                            [dynamicRegex, 'others-theme'],
-                            [/(^|\s)(--[^\r\n]+)/, 'comments-theme']
-                        ]
-                    }
-                }
-            }
-
-            
-            monaco.languages.setMonarchTokensProvider('customVHDL', {
-                tokenizer: {
-                    root: [
-                        [typeRegex, 'type-theme'],
-                        [structRegex, 'struct-theme'],
-                        [controlRegex, 'control-theme'],
-                        [operationsRegex, 'operations-theme'],
-                        [visibilityRegex, 'visibility-theme'],
-                        [othersRegex, 'others-theme'],
-                        [/(^|\s)(--[^\r\n]+)/, 'comments-theme'],
-                    ]
-                }
-            });
-
-            monaco.editor.defineTheme('color-theme', {
-                base: 'vs-dark',
-                inherit: true,
-                rules: [
-                    { token: 'type-theme', foreground: '#FFA500', fontStyle: 'bold' },
-                    { token: 'struct-theme', foreground: '#87FF17', fontStyle: 'bold' },
-                    { token: 'control-theme', foreground: '#1797FF', fontStyle: 'bold' },
-                    { token: 'operations-theme', foreground: '#FF1793', fontStyle: 'bold' },
-                    { token: 'visibility-theme', foreground: '#F1FC17', fontStyle: 'bold' },
-                    { token: 'others-theme', foreground: '#FF0000', fontStyle: 'bold' },
-                    { token: 'comments-theme', foreground: '#00BFFF', fontStyle: 'italic' }
-                ],
-                colors: {
-                    'editor.foreground': '#F1F1F1'
-                }
-            });
-            
-            monaco.editor.setTheme('color-theme');            
-
-            document.getElementById("localBtn").addEventListener('click', function (){
-                const texto = window.editor.getValue();
-
-                fetch('/local', {
-                    // Indica que es una petición POST (para enviar datos al servidor).
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        content: texto
-                    })
-                })
-                // res es un objeto Response con la respuesta de la solicitud; se devuelve el JSON
-                .then(res => res.json())
-                // data.message es el mensaje de confirmación
-                .then(data => {
-                    alert(data.message);
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert("Error guardando el archivo");
-                });
-            });
-
-            document.getElementById('guardarBtn').addEventListener('click', () => {
-                const contenido = window.editor.getValue();
-                fetch('/guardar', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contenido })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'ok')
-                        alert('Contenido guardado correctamente');
-                });
-            });
-
-            document.getElementById('cargarBtn').addEventListener('click', () => {
-                fetch('/cargar')
-                    .then(response => response.json())
-                    .then(data => {
-                        window.editor.setValue(data.contenido_cargado || '');
-                    });
-            });
-        });
-    </script>
-
+    <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

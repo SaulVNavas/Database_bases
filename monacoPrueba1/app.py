@@ -23,7 +23,8 @@ def index():
     # indexColorSearch
     # indexExperimentalHighlights
     # indexEveryWordInRange
-    return render_template('indexEveryWordInRange.html')
+    # betaNameIndex
+    return render_template('index.html')
 
 
 # Ruta para guardar localmente (recibe JSON)
