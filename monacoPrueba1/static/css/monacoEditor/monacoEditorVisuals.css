@@ -1,0 +1,23 @@
+/* Visuales de la ventana del editor y botones */
+#editor { width: 800px; height: 400px; border: 1px solid gray; }
+button { margin-top: 10px; }
+#editor { width: 800px; height: 400px; border: 1px solid gray; }
+button { margin-top: 10px; }
+
+
+/* Estilos en el editor */
+.monaco-editor .micropyhton-keywords-style {
+    color: rgb(207, 110, 216);
+}
+
+.monaco-editor .arduino-keywords-style {
+    color: rgb(207, 110, 216);
+}
+
+.monaco-editor .vhdl-naming-style {
+    color: rgb(207, 110, 216);
+}
+
+.monaco-editor .vhdl-single-quote-style {
+    color: rgb(207, 110, 216);
+}

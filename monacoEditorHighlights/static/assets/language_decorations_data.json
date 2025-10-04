@@ -1,0 +1,34 @@
+{
+    "customVhdl": {
+        "decorations_info": [
+            {
+                "regex": "(?<![a-zA-Z])\\d*\\.?\\d+(?![a-zA-Z])",
+                "style": "vhdl-numbers-style"
+            },
+            {
+                "regex": "(?<![a-zA-Z0-9])'[^']*'(?![a-zA-Z0-9])",
+                "style": "vhdl-naming-style"
+            }
+        ],
+        "hasTokens": true,
+        "tokenDataRoute": "/static/assets/vhdl_token_data.json"
+    },
+    "python": {
+        "decorations_info": [
+            {
+                "regex": "machine|network|utime|uos|I2C|SPI|ADC|PWM",
+                "style": "micropyhton-keywords-style"
+            }
+        ],
+        "hasTokens": false
+    },
+    "c": {
+        "decorations_info":[
+            {
+            "regex": "setup|loop|pinMode|digitalWrite|digitalRead|analogWrite|analogRead|delay",
+            "style": "arduino-keywords-style"
+            }
+        ],
+        "hasTokens": false
+    }
+}

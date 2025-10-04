@@ -3,11 +3,11 @@ import os
 import sqlite3
 
 app = Flask(__name__)
-DB_route = 'storage/guardadoSQL.db'
+DB = 'storage/db/inEditorText.db'
 
 # Función para crear la tabla si no existe
 def init_db():
-    conn = sqlite3.connect(DB_route)
+    conn = sqlite3.connect(DB)
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS archivo_de_guardado (
@@ -33,7 +33,7 @@ def save_file():
     data = request.get_json()
     content = data.get("content", "")
 
-    ruta = os.path.join(os.getcwd(), "codigo_guardado.txt")
+    ruta = os.path.join(os.getcwd(), "storage/local/localInEditorText.txt")
 
     with open(ruta, "w", encoding="utf-8") as f:
         f.write(content)
@@ -47,7 +47,7 @@ def guardar():
     data = request.get_json()
     contenido = data.get('contenido', '')
 
-    conn = sqlite3.connect(DB_route)
+    conn = sqlite3.connect(DB)
     cursor = conn.cursor()
     cursor.execute('INSERT INTO archivo_de_guardado (codigo_guardado) VALUES (?)', (contenido,))
     conn.commit()
@@ -59,7 +59,7 @@ def guardar():
 # Ruta para obtener el contenido guardado más reciente
 @app.route('/cargar', methods=['GET'])
 def cargar():
-    conn = sqlite3.connect(DB_route)
+    conn = sqlite3.connect(DB)
     cursor = conn.cursor()
     cursor.execute('SELECT codigo_guardado FROM archivo_de_guardado ORDER BY id DESC LIMIT 1')
     fila = cursor.fetchone()

@@ -128,6 +128,10 @@ require(['vs/editor/editor.main'], function () {
         .then(data => {
             if (data.status === 'ok')
                 alert('Contenido guardado correctamente');
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Error guardando el archivo");
         });
     });
 
