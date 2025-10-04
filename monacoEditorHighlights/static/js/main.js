@@ -3,71 +3,7 @@ require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@late
 require(['vs/editor/editor.main'], function () {
 
     window.editor = monaco.editor.create(document.getElementById('editor'), {
-        value: [
-            '---------------------------------- ARDUINO ----------------------------------',
-            '',
-            '#include <Servo.h>',
-            'Servo myServo; // Create a Servo object', "",
-            'void setup() {',
-            '    myServo.attach(9); // Attach servo to pin 9',
-            '}',
-            'void loop() {',
-            '   for (int pos = 0; pos <= 180; pos++) { // Move from 0° to 180°',
-            '       myServo.write(pos);',
-            '       delay(15);',
-            '   }',
-            '}',
-            '',
-            '------------------------------------ VHDL -----------------------------------',
-            '',
-            'library ieee;',
-            'use ieee.std_logic_1164.all;',
-            'use ieee.numeric_std.all;',
-            '',
-            'entity signed_adder is',
-            '   port',
-            '   (',
-            '       aclr : in   std_logic;',
-            '       clk  : in   std_logic;',
-            '       a    : in   std_logic_vector;',
-            '       b    : in   std_logic_vector;',
-            '       q    : out  std_logic_vector',
-            '   );',
-            'end signed_adder;',
-            '',
-            'architecture signed_adder_arch of signed_adder is',
-            '   signal q_s : signed(a\'high+1 downto 0); -- extra bit wide',
-            '',
-            'begin -- architecture',
-            '   assert(a\'length >= b\'length)',
-            '       report "Port A must be the longer vector if different sizes!"',
-            '       severity FAILURE;',
-            '   q <= std_logic_vector(q_s);',
-            '   adding_proc:',
-            '   process (aclr, clk)',
-            '       begin',
-            '           if (aclr = \'1\') then',
-            '               q_s <= (others => \'0\');',
-            '           elsif rising_edge(clk) then',
-            '               q_s <= (\'0\'&signed(a)) + (\'0\'&signed(b));',
-            '           end if; -- clk\'d',
-            '       end process;',
-            'end signed_adder_arch;',
-            '',
-            '-------------------------------- MICROPYTHON --------------------------------',
-            '',
-            'from machine import Pin',
-            'import time',
-            '',
-            'pin_led = Pin(25, mode=Pin.OUT)',
-            '',
-            'while True',
-            '',
-            '   pin_led.on()',
-            '   time.sleep(1)',
-            '   pin_led.off()',
-            '   time.sleep(1)',
-        ].join('\n'),
+        value: '',
         language: 'python',
         theme: 'vs-dark',
     });
@@ -77,7 +13,6 @@ require(['vs/editor/editor.main'], function () {
     let languageDecorations = [];
 
     const comboboxSelection = document.getElementById("lenguaje");
-    console.log(comboboxSelection.value);
     monaco.languages.register({ id: comboboxSelection.value });
     monaco.editor.setModelLanguage(editor.getModel(), comboboxSelection.value);
 
@@ -146,6 +81,7 @@ require(['vs/editor/editor.main'], function () {
 
     keywordDecorationActivation();
 
+    // Activación de colores en palabras reservadas
     function keywordDecorationActivation(){
         currentLanguageChoice = comboboxSelection.value;
 
@@ -176,6 +112,7 @@ require(['vs/editor/editor.main'], function () {
         });
     }
 
+    // Registro de decoradores
     function highlightWords() {
         currentDecorations = editor.deltaDecorations(currentDecorations, []);
         let newDecorations = [];
