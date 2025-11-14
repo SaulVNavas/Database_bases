@@ -1,0 +1,16 @@
+/* Estilos en el editor */
+.monaco-editor .micropyhton-keywords-style {
+    color: rgb(207, 110, 216);
+}
+
+.monaco-editor .arduino-keywords-style {
+    color: rgb(207, 110, 216);
+}
+
+.monaco-editor .vhdl-naming-style {
+    color: rgb(207, 110, 216);
+}
+
+.monaco-editor .vhdl-single-quote-style {
+    color: rgb(207, 110, 216);
+}

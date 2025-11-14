@@ -1,0 +1,220 @@
+{
+    "tokens": {    
+        "Vhdl": {
+            "hasTokens": true,
+            "tokenConfig": {
+                "tokenizer": {
+                    "root": [
+                        [
+                            "[a-zA-Z_]\\w*",
+                            {
+                            "cases": {
+                                "access": "type-theme",
+                                "array": "type-theme",
+                                "attribute": "type-theme",
+                                "bit": "type-theme",
+                                "boolean": "type-theme",
+                                "character": "type-theme",
+                                "constant": "type-theme",
+                                "file": "type-theme",
+                                "integer": "type-theme",
+                                "null": "type-theme",
+                                "real": "type-theme",
+                                "record": "type-theme",
+                                "register": "type-theme",
+                                "string": "type-theme",
+                                "time": "type-theme",
+                                "type": "type-theme",
+                                "signal": "type-theme",
+                                "shared": "type-theme",
+                                "std_logic": "type-theme",
+                                "std_logic_vector": "type-theme",
+                                "subtype": "type-theme",
+                                "units": "type-theme",
+                                "variable": "type-theme",
+
+                                "architecture": "struct-theme",
+                                "begin": "struct-theme",
+                                "block": "struct-theme",
+                                "body": "struct-theme",
+                                "component": "struct-theme",
+                                "configuration": "struct-theme",
+                                "end": "struct-theme",
+                                "entity": "struct-theme",
+                                "function": "struct-theme",
+                                "generate": "struct-theme",
+                                "generic    ": "struct-theme",
+                                "label": "struct-theme",
+                                "map": "struct-theme",
+                                "package": "struct-theme",
+                                "port": "struct-theme",
+                                "postponed": "struct-theme",
+                                "process": "struct-theme",
+                                "procedure": "struct-theme",
+                                "use": "struct-theme",
+                                "library": "struct-theme",
+
+                                "after": "control-theme",
+                                "case": "control-theme",
+                                "disconnect": "control-theme",
+                                "else": "control-theme",
+                                "elsif": "control-theme",
+                                "exit": "control-theme",
+                                "for": "control-theme",
+                                "guarded": "control-theme",
+                                "if": "control-theme",
+                                "in": "control-theme",
+                                "inertial": "control-theme",
+                                "loop": "control-theme",
+                                "next": "control-theme",
+                                "reject": "control-theme",
+                                "return": "control-theme",
+                                "then": "control-theme",
+                                "to": "control-theme",
+                                "transport": "control-theme",
+                                "unaffected": "control-theme",
+                                "until": "control-theme",
+                                "wait": "control-theme",
+                                "when": "control-theme",
+                                "while": "control-theme",
+
+                                "abs": "operations-theme",
+                                "and": "operations-theme",
+                                "mod": "operations-theme",
+                                "nand": "operations-theme",
+                                "not": "operations-theme",
+                                "nor": "operations-theme",
+                                "or": "operations-theme",
+                                "rem": "operations-theme",
+                                "rol": "operations-theme",
+                                "ror": "operations-theme",
+                                "sla": "operations-theme",
+                                "sll": "operations-theme",
+                                "sra": "operations-theme",
+                                "srl": "operations-theme",
+                                "xnor": "operations-theme",
+                                "xor": "operations-theme",
+                                
+                                "alias": "visibility-theme",
+                                "all": "visibility-theme",
+                                "assert": "others-theme",
+                                "buffer": "visibility-theme",
+                                "bus": "visibility-theme",
+                                "downto": "visibility-theme",
+                                "error": "visibility-theme",
+                                "group": "visibility-theme",
+                                "failure": "visibility-theme",
+                                "impure": "visibility-theme",
+                                "inout": "visibility-theme",
+                                "is": "visibility-theme",
+                                "linkage": "visibility-theme",
+                                "new": "visibility-theme",
+                                "note": "visibility-theme",
+                                "out": "visibility-theme",
+                                "of": "visibility-theme",
+                                "on": "visibility-theme",
+                                "others": "visibility-theme",
+                                "open": "visibility-theme",
+                                "pure": "visibility-theme",
+                                "range": "visibility-theme",
+                                "report": "visibility-theme",
+                                "severity": "visibility-theme",
+                                "select": "visibility-theme",
+                                "signature": "visibility-theme",
+                                "warning": "visibility-theme",
+                                "with": "visibility-theme",
+
+                                "@default": "identifier"
+                            }
+                        }],
+                        [";|:", "separations-theme"],
+                        [":=|<=|=>", "sign-functions-theme"],
+                        ["--.*$", "comments-theme"]
+                    ]
+                }
+            },
+            "tokenRules": {
+                "base": "vs-dark",
+                "inherit": true,
+                "fontStyle": "bold",
+                "rules": [
+                    {
+                        "token": "type-theme",
+                        "foreground": "#32a852"
+                    },
+                    {
+                        "token": "struct-theme",
+                        "foreground": "#fa8d28"
+                    },
+                    {
+                        "token": "control-theme",
+                        "foreground": "#65afeb"
+                    },
+                    {
+                        "token": "sign-functions-theme",
+                        "foreground": "#eb4034"
+                    },
+                    {
+                        "token": "visibility-theme",
+                        "foreground": "#e1f55f"
+                    },
+                    {
+                        "token": "others-theme",
+                        "foreground": "#d94343"
+                    },
+                    {
+                        "token": "separations-theme",
+                        "foreground": "#4083db"
+                    },
+                    {
+                        "token": "comments-theme",
+                        "foreground": "#43b3d9",
+                        "fontStyle": "italic"
+                    }
+                ],
+                "colors": {
+                    "editor.foreground": "#f2f7fc"
+                }
+            }
+        },
+        "Arduino": {
+            "hasTokens": false,
+            "tokenConfig": null,
+            "tokenRules": null
+        },
+        "Micropython": {
+            "hasTokens": false,
+            "tokenConfig": null,
+            "tokenRules": null
+        }
+    },
+    "decorations": {
+        "Vhdl": [
+            {
+                "regex": "(?<![a-zA-Z])\\d*\\.?\\d+(?![a-zA-Z])",
+                "style": "vhdl-numbers-style"
+            },
+            {
+                "regex": "(?<![a-zA-Z0-9])'[^']*'(?![a-zA-Z0-9])",
+                "style": "vhdl-naming-style"
+            }
+        ],
+        "Micropython": [
+            {
+                "regex": "machine|network|utime|uos|I2C|SPI|ADC|PWM",
+                "style": "micropyhton-keywords-style"
+            }
+        ],
+        "Arduino": [
+            {
+            "regex": "setup|loop|pinMode|digitalWrite|digitalRead|analogWrite|analogRead|delay",
+            "style": "arduino-keywords-style"
+            }
+        ]
+    },
+    "baseLanguages": {
+        "Arduino": "c",
+        "Micropython": "python",
+        "Vhdl": "vhdl"
+    }
+}

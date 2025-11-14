@@ -1,0 +1,20 @@
+{
+    "micropython": {
+        "micropyhton-keywords-style": {
+            "color": "rgb(207, 110, 216)"
+        }
+    },
+    "arduino": {
+        "arduino-keywords-style": {
+            "color": "rgb(207, 110, 216)"
+        }
+    },
+    "vhdl": {
+        "vhdl-naming-style": {
+            "color": "rgb(207, 110, 216)"
+        },
+        "vhdl-single-quote-style": {
+            "color": "rgb(207, 110, 216)"
+        }
+    }
+}
