@@ -81,37 +81,6 @@ function Appy() {
 
   }
 
-  // const updateTokens = () => {
-  //   if (!editorRef.current || !monacoRef.current) return
-
-  //   const tokensInfo =
-  //     highlightsData.tokens[currentLanguage[0] as keyof typeof highlightsData.tokens]
-  //   if(!tokensInfo.hasTokens || !tokensInfo.tokenConfig) return
-
-  //   const tokenConfig = convertTokenConfig(tokensInfo.tokenConfig);
-
-  //   monacoRef.current.languages.register({ id: currentLanguage[1] });
-
-  //   monacoRef.current.languages.setMonarchTokensProvider(
-  //     currentLanguage[1],
-  //     tokenConfig as monaco.languages.IMonarchLanguage
-  //   );
-  // }
-
-  // function convertTokenConfig(config: any) {
-  //   const copy = structuredClone(config);
-
-  //   for (const [i, rule] of copy.tokenizer.root.entries()) {
-  //     const pattern = rule[0];
-  //     if (typeof pattern === "string") {
-  //       // convertir a RegExp real
-  //       copy.tokenizer.root[i][0] = new RegExp(pattern);
-  //     }
-  //   }
-
-  //   return copy;
-  // }
-
 
   useEffect(() => {
     console.log("Nuevo lenguaje: ", currentLanguage)
